@@ -12,6 +12,9 @@ class AppointmentCreate(AppointmentBase):
 
 class Appointment(BaseModel):
     id: int
+    owner_name: str
+    date: datetime
+    reason: str | None = None
 
     class Config:
         from_attributes = True

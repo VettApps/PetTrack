@@ -59,6 +59,9 @@
   <script>
     const API_URL = 'http://localhost:8002';
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const appointmentId = urlParams.get('id');
+
     document.addEventListener('DOMContentLoaded', async () => {
       const container = document.getElementById('appointmentsContainer');
 
@@ -83,6 +86,7 @@
               <p><strong>Dueño:</strong> ${cita.owner_name}</p>
               <p><strong>Fecha:</strong> ${new Date(cita.date).toLocaleString()}</p>
               <p><strong>Motivo:</strong> ${cita.reason}</p>
+              <button onclick="window.location.href='appointment_form.html?id=${cita.id}'">Editar</button>
             `;
             container.appendChild(card);
           });
