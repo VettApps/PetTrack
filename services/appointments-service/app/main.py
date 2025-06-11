@@ -1,10 +1,22 @@
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
+from . import models, schemas
+from .database import SessionLocal, engine, Base
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+Base.metadata.create_all(bind=engine)
 
-# Dependencia para obtener una sesión de base de datos
+app = FastAPI(title="Appointments Service")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # No uses "*" con allow_credentials=True
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -12,46 +24,14 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/appointments")
-def read_appointments(db: Session = Depends(get_db)):
-    # Usa `db` para interactuar con la base de datos
-    return {"message": "funciona"}
+@app.post("/appointments/", response_model=schemas.Appointment)
+def create_appointment(appointment: schemas.AppointmentCreate, db: Session = Depends(get_db)):
+    db_appointment = models.Appointment(**appointment.dict())
+    db.add(db_appointment)
+    db.commit()
+    db.refresh(db_appointment)
+    return db_appointment
 
-
-##DATABASE_URL = "mysql+pymysql://user:password@db_host:3306/appointments_db"
-##
-##engine = create_engine(DATABASE_URL)
-##SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-##
-##Base = declarative_base()
-##
-##class Appointment(Base):
-##    __tablename__ = "appointments"
-##    id = Column(Integer, primary_key=True, index=True)
-##    pet_name = Column(String(255), nullable=False)
-##    owner_name = Column(String(255), nullable=False)
-##    date = Column(DateTime, nullable=False)
-##    reason = Column(String(255), nullable=True)
-##
-##Base.metadata.create_all(bind=engine)
-##
-##class AppointmentCreate(BaseModel):
-##    pet_name: str
-##    owner_name: str
-##    date: datetime
-##    reason: str | None = None
-##
-##@app.post("/appointments")
-##def create_appointment(appointment: AppointmentCreate):
-##    db = SessionLocal()
-##    db_appointment = Appointment(
-##        pet_name=appointment.pet_name,
-##        owner_name=appointment.owner_name,
-##        date=appointment.date,
-##        reason=appointment.reason
-##    )
-##    db.add(db_appointment)
-##    db.commit()
-##    db.refresh(db_appointment)
-##    db.close()
-##    return {"message": "Cita creada", "id": db_appointment.id}
+@app.get("/appointments/", response_model=list[schemas.Appointment])
+def read_appointments(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    return db.query(models.Appointment).offset(skip).limit(limit).all()

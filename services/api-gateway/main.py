@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 import os
@@ -49,3 +50,12 @@ async def get_appointments():
     async with httpx.AsyncClient() as client:
         response = await client.get(f"{APPOINTMENTS_SERVICE_URL}/appointments/")
     return JSONResponse(status_code=response.status_code, content=response.json())
+
+@app.post("/appointments/")
+async def create_appointment(request: Request):
+    body = await request.body()
+    async with httpx.AsyncClient() as client:
+        response = await client.post(f"{APPOINTMENTS_SERVICE_URL}/appointments/", content=body, headers=request.headers)
+    return JSONResponse(status_code=response.status_code, content=response.json())
+
+
