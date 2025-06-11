@@ -85,16 +85,17 @@
 
   <div class="form-container">
     <form id="appointmentForm">
+      <!-- Campos del formulario -->
       <div class="input-field">
         <label for="pet_name">Nombre de la Mascota:</label>
         <input type="text" id="pet_name" required />
       </div>
-      
+
       <div class="input-field">
         <label for="owner_name">Nombre del Dueño:</label>
         <input type="text" id="owner_name" required />
       </div>
-      
+
       <div class="input-field">
         <label for="date">Fecha de la Cita:</label>
         <input type="datetime-local" id="date" required />
@@ -104,12 +105,20 @@
         <label for="reason">Motivo:</label>
         <textarea id="reason" rows="3" required></textarea>
       </div>
-      
+
       <button type="submit">Guardar Cita</button>
       <div id="msg" class="message"></div>
     </form>
+
+    <!-- Botón adicional para ir a la lista de citas -->
+    <div style="margin-top: 20px;">
+      <button onclick="window.location.href='appointments_list.html'" style="background-color: #81c784;">
+        Ver Citas Agendadas
+      </button>
+    </div>
   </div>
 
+  <!-- Script JS sin cambios -->
   <script>
     const API_URL = 'http://localhost:8002';
 
@@ -132,7 +141,7 @@
         }
 
         try {
-          const response = await fetch(`${API_URL}/appointments/`, { // barra final agregada aquí
+          const response = await fetch(`${API_URL}/appointments/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

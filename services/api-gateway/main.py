@@ -46,9 +46,10 @@ async def get_users():
 # --- APPOINTMENTS SERVICE PROXIES (Ejemplo) ---
 
 @app.get("/appointments/")
-async def get_appointments():
+async def get_appointments(request: Request):
+    query_string = request.url.query  # obtiene ?skip=0&limit=10 si existe
     async with httpx.AsyncClient() as client:
-        response = await client.get(f"{APPOINTMENTS_SERVICE_URL}/appointments/")
+        response = await client.get(f"{APPOINTMENTS_SERVICE_URL}/appointments/?{query_string}")
     return JSONResponse(status_code=response.status_code, content=response.json())
 
 @app.post("/appointments/")

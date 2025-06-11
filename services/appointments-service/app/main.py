@@ -33,5 +33,5 @@ def create_appointment(appointment: schemas.AppointmentCreate, db: Session = Dep
     return db_appointment
 
 @app.get("/appointments/", response_model=list[schemas.Appointment])
-def read_appointments(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    return db.query(models.Appointment).offset(skip).limit(limit).all()
+def read_appointments(db: Session = Depends(get_db)):
+    return db.query(models.Appointment).all()
