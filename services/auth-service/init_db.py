@@ -6,6 +6,8 @@ from app.database import get_db
 from app.config import settings
 from passlib.context import CryptContext
 
+#Hola
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def init_db():
