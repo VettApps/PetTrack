@@ -43,6 +43,7 @@ Este proyecto sigue una arquitectura basada en microservicios, todos gestionados
 
 ## 🏗️ Estructura del Monorepo
 
+```bash
 PetTrack/
 ├── .github/                      # Workflows de CI/CD
 │
@@ -61,6 +62,7 @@ PetTrack/
 │
 ├── docker-compose.yml          # Orquestación de servicios
 └── README.md                   # Documentación del proyecto
+```
 
 # 🚀 Guía Completa para Levantar PetTrack con Docker Compose
 
