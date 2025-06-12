@@ -81,8 +81,8 @@
         window.location.href = 'login.html';
       }
 
-      // Si es owner, ocultar 'Agendar Cita'
-      if (role === 'owner') {
+      // Si es doctor, ocultar 'Agendar Cita'
+      if (role === 'doctor') {
         document.querySelector('a[href="appointment.html"]').style.display = 'none';
       }
 
