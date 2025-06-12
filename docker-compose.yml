@@ -19,7 +19,20 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
-  
+
+  pets-service:
+    build: ./services/pets-service
+    container_name: pets_service
+    ports:
+      - "8003:8000"
+    env_file:
+      - ./services/pets-service/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./services/pets-service/app:/app/app
+
   api-gateway:
     build: ./services/api-gateway
     container_name: api_gateway
@@ -28,9 +41,11 @@ services:
     environment:
       - AUTH_SERVICE_URL=http://auth-service:8000
       - APPOINTMENTS_SERVICE_URL=http://appointments-service:8000
+      - PETS_SERVICE_URL=http://pets-service:8000
     depends_on:
       - auth-service
       - appointments-service
+      - pets-service
 
   auth-service:
     build: ./services/auth-service
@@ -59,7 +74,6 @@ services:
       - ./services/appointments-service:/app
       - /app/node_modules
 
-
   web-client:
     build: ./clients/web-client
     container_name: web_client
@@ -68,6 +82,7 @@ services:
     depends_on:
       - auth-service
       - appointments-service
+      - pets-service
     volumes:
       - ./clients/web-client:/app
 
