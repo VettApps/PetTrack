@@ -5,12 +5,11 @@ on:
     branches: [main]
  
 env:
-  REGISTRY: ${{ secrets.REGISTRY }}
+  REGISTRY: ${{ secrets.REGISTRY }}  # ejemplo: pettrackregistry.azurecr.io
   IMAGE_NAME: veterinary-app
   TAG: latest
   APP_NAME: veterinary-app
   COMPOSE_FILE: docker-compose.yml
-  RESOURCE_GROUP: pettrack
  
 jobs:
   build-and-deploy:
@@ -32,29 +31,8 @@ jobs:
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
  
-    - name: Build and push Docker images
-      run: |
-        docker compose -f $COMPOSE_FILE build
-        docker tag pets_service $REGISTRY/$IMAGE_NAME-pets-service:$TAG
-        docker tag auth_service $REGISTRY/$IMAGE_NAME-auth-service:$TAG
-        docker tag appointments_service $REGISTRY/$IMAGE_NAME-appointments-service:$TAG
-        docker tag api_gateway $REGISTRY/$IMAGE_NAME-api-gateway:$TAG
-        docker tag web_client $REGISTRY/$IMAGE_NAME-web-client:$TAG
+    - name: Build Docker images
+      run: docker compose -f $COMPOSE_FILE build
  
-        docker push $REGISTRY/$IMAGE_NAME-pets-service:$TAG
-        docker push $REGISTRY/$IMAGE_NAME-auth-service:$TAG
-        docker push $REGISTRY/$IMAGE_NAME-appointments-service:$TAG
-        docker push $REGISTRY/$IMAGE_NAME-api-gateway:$TAG
-        docker push $REGISTRY/$IMAGE_NAME-web-client:$TAG
- 
-    - name: Deploy to Azure App Service
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.APP_NAME }}
-        slot-name: production
-        images: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-auth-service:${{ env.TAG }},
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-appointments-service:${{ env.TAG }},
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-pets-service:${{ env.TAG }},
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api-gateway:${{ env.TAG }},
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-web-client:${{ env.TAG }}
+    - name: Push Docker images to Azure Container Registry
+      run: docker compose -f $COMPOSE_FILE push

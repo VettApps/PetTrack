@@ -22,6 +22,7 @@ services:
 
   pets-service:
     build: ./services/pets-service
+    image: pettrackregistry.azurecr.io/veterinary-app-pets-service:latest
     container_name: pets_service
     ports:
       - "8003:8000"
@@ -35,6 +36,7 @@ services:
 
   api-gateway:
     build: ./services/api-gateway
+    image: pettrackregistry.azurecr.io/veterinary-app-api-gateway:latest
     container_name: api_gateway
     ports:
       - "8002:8002"
@@ -49,6 +51,7 @@ services:
 
   auth-service:
     build: ./services/auth-service
+    image: pettrackregistry.azurecr.io/veterinary-app-auth-service:latest
     container_name: auth_service
     ports:
       - "8000:8000"
@@ -62,6 +65,7 @@ services:
 
   appointments-service:
     build: ./services/appointments-service
+    image: pettrackregistry.azurecr.io/veterinary-app-appointments-service:latest
     container_name: appointments_service
     ports:
       - "8001:8000"
@@ -76,6 +80,7 @@ services:
 
   web-client:
     build: ./clients/web-client
+    image: pettrackregistry.azurecr.io/veterinary-app-web-client:latest
     container_name: web_client
     ports:
       - "8080:8080"
