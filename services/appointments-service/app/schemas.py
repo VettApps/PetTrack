@@ -12,6 +12,7 @@ class AppointmentCreate(AppointmentBase):
 
 class Appointment(BaseModel):
     id: int
+    pet_name: str
     owner_name: str
     date: datetime
     reason: str | None = None
