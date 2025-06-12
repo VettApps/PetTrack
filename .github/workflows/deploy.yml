@@ -1,56 +1,60 @@
 name: CI/CD Pipeline
 
 on:
-  pull_request:
-    branches: [main]  
+  push:
+    branches: [main]
 
 env:
-  REGISTRY: ${{ vars.REGISTRY }}
-  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+  REGISTRY: ${{ secrets.REGISTRY }}
+  IMAGE_NAME: veterinary-app
   TAG: latest
   APP_NAME: veterinary-app
-  SLOT_NAME: production
+  RESOURCE_GROUP: pettrack-rg
+  COMPOSE_FILE: docker-compose.yml
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Login to Azure Container Registry
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Azure login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Docker login to ACR
       uses: azure/docker-login@v1
       with:
         login-server: ${{ secrets.REGISTRY }}
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
-    
-    - name: Build and push auth-service
+
+    - name: Build and push Docker images
       run: |
-        docker build -t $REGISTRY/$IMAGE_NAME-auth-service:$TAG ./services/auth-service
+        docker compose -f $COMPOSE_FILE build
+        docker tag pets_service $REGISTRY/$IMAGE_NAME-pets-service:$TAG
+        docker tag auth_service $REGISTRY/$IMAGE_NAME-auth-service:$TAG
+        docker tag appointments_service $REGISTRY/$IMAGE_NAME-appointments-service:$TAG
+        docker tag api_gateway $REGISTRY/$IMAGE_NAME-api-gateway:$TAG
+        docker tag web_client $REGISTRY/$IMAGE_NAME-web-client:$TAG
+
+        docker push $REGISTRY/$IMAGE_NAME-pets-service:$TAG
         docker push $REGISTRY/$IMAGE_NAME-auth-service:$TAG
-    
-    - name: Build and push web-client
-      run: |
-        docker build -t $REGISTRY/$IMAGE_NAME-web-client:$TAG ./clients/web-client
+        docker push $REGISTRY/$IMAGE_NAME-appointments-service:$TAG
+        docker push $REGISTRY/$IMAGE_NAME-api-gateway:$TAG
         docker push $REGISTRY/$IMAGE_NAME-web-client:$TAG
 
-    - name: Build and push appointment-service
-      run: |
-        docker build -t $REGISTRY/$IMAGE_NAME-appointment-service:$TAG ./services/appointment-service
-        docker push $REGISTRY/$IMAGE_NAME-appointment-service:$TAG
-    
-    - name: Build and push api-gateway
-      run: |
-        docker build -t $REGISTRY/$IMAGE_NAME-api-gateway:$TAG ./services/api-gateway
-        docker push $REGISTRY/$IMAGE_NAME-api-gateway:$TAG    
-    
-    - name: Deploy to Azure App Service
+    - name: Deploy multi-container app to Azure App Service
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.APP_NAME }}
-        slot-name: ${{ env.SLOT_NAME }}
+        slot-name: production
         images: |
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-auth-service:${{ env.TAG }},
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-web-client:${{ env.TAG }},
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-appointment-service:${{ env.TAG }},
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api-gateway:${{ env.TAG }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-appointments-service:${{ env.TAG }},
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-pets-service:${{ env.TAG }},
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api-gateway:${{ env.TAG }},
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-web-client:${{ env.TAG }}
