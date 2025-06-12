@@ -19,7 +19,7 @@ app.add_middleware(
 # URLs internas de los microservicios
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://auth-service:8000")
 APPOINTMENTS_SERVICE_URL = os.getenv("APPOINTMENTS_SERVICE_URL", "http://appointments-service:8000")
-PET_SERVICE_URL = os.getenv("PET_SERVICE_URL", "http://pet-service:8000")
+PETS_SERVICE_URL = os.getenv("PETS_SERVICE_URL", "http://pets-service:8000")
 
 # --- AUTH SERVICE PROXIES ---
 
@@ -63,20 +63,20 @@ async def create_appointment(request: Request):
 async def get_pets(request: Request):
     query_string = request.url.query  # obtiene ?skip=0&limit=10 si existe
     async with httpx.AsyncClient() as client:
-        response = await client.get(f"{PET_SERVICE_URL}/pets/?{query_string}")      
+        response = await client.get(f"{PETS_SERVICE_URL}/pets/?{query_string}")      
     return JSONResponse(status_code=response.status_code, content=response.json())
 
 @app.post("/pets/")
 async def create_pet(request: Request):
     body = await request.body()
     async with httpx.AsyncClient() as client:
-        response = await client.post(f"{PET_SERVICE_URL}/pets/", content=body, headers=request.headers)
+        response = await client.post(f"{PETS_SERVICE_URL}/pets/", content=body, headers=request.headers)
     return JSONResponse(status_code=response.status_code, content=response.json())
 
 @app.get("/pets/{pet_id}")
 async def get_pet(pet_id: int, request: Request):
     async with httpx.AsyncClient() as client:
-        response = await client.get(f"{PET_SERVICE_URL}/pets/{pet_id}")
+        response = await client.get(f"{PETS_SERVICE_URL}/pets/{pet_id}")
     return JSONResponse(status_code=response.status_code, content=response.json())
 
 
