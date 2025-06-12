@@ -1,37 +1,37 @@
 name: CI/CD Pipeline
-
+ 
 on:
   push:
     branches: [main]
-
+ 
 env:
   REGISTRY: ${{ secrets.REGISTRY }}
   IMAGE_NAME: veterinary-app
   TAG: latest
   APP_NAME: veterinary-app
-  RESOURCE_GROUP: pettrack-rg
   COMPOSE_FILE: docker-compose.yml
-
+  RESOURCE_GROUP: pettrack
+ 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
+ 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-
+ 
     - name: Azure login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-
+ 
     - name: Docker login to ACR
       uses: azure/docker-login@v1
       with:
         login-server: ${{ secrets.REGISTRY }}
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
-
+ 
     - name: Build and push Docker images
       run: |
         docker compose -f $COMPOSE_FILE build
@@ -40,14 +40,14 @@ jobs:
         docker tag appointments_service $REGISTRY/$IMAGE_NAME-appointments-service:$TAG
         docker tag api_gateway $REGISTRY/$IMAGE_NAME-api-gateway:$TAG
         docker tag web_client $REGISTRY/$IMAGE_NAME-web-client:$TAG
-
+ 
         docker push $REGISTRY/$IMAGE_NAME-pets-service:$TAG
         docker push $REGISTRY/$IMAGE_NAME-auth-service:$TAG
         docker push $REGISTRY/$IMAGE_NAME-appointments-service:$TAG
         docker push $REGISTRY/$IMAGE_NAME-api-gateway:$TAG
         docker push $REGISTRY/$IMAGE_NAME-web-client:$TAG
-
-    - name: Deploy multi-container app to Azure App Service
+ 
+    - name: Deploy to Azure App Service
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.APP_NAME }}
